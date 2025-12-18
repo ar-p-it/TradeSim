@@ -107,6 +107,104 @@ docker compose down
 - Broker API routes: see [broker-service/src/routes.js](broker-service/src/routes.js) and [docs/api/broker-api.md](docs/api/broker-api.md)
 - Market data API: [docs/api/market-data-api.md](docs/api/market-data-api.md)
 
+## Code Examples
+
+Below are lightweight demo snippets to illustrate how clients might interact with the broker and market data services. Endpoints are placeholders — adapt to the actual routes in [broker-service/src/routes.js](broker-service/src/routes.js) and the market data service.
+
+### TypeScript: Submit a Limit Order via Broker API
+
+```ts
+type Side = "BUY" | "SELL";
+type OrderType = "LIMIT" | "MARKET";
+
+interface OrderRequest {
+  symbol: string;
+  side: Side;
+  type: OrderType;
+  price?: number;
+  quantity: number;
+  clientId: string;
+}
+
+interface OrderResponse {
+  orderId: string;
+  status: "ACCEPTED" | "REJECTED";
+  reason?: string;
+}
+
+const BASE = process.env.BROKER_URL ?? "http://localhost:8080";
+
+async function placeOrder(req: OrderRequest): Promise<OrderResponse> {
+  const res = await fetch(`${BASE}/api/v1/orders`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+  return res.json() as Promise<OrderResponse>;
+}
+
+placeOrder({
+  symbol: "TSIM",
+  side: "BUY",
+  type: "LIMIT",
+  price: 101.25,
+  quantity: 50,
+  clientId: "demo-client",
+})
+  .then((o) => console.log("Order response:", o))
+  .catch((err) => console.error("Order error:", err));
+```
+
+Run with Node 20+ (native `fetch`) or Deno/Bun.
+
+### JavaScript: Subscribe to Market Data via WebSocket
+
+```js
+// Browser example — open the console to see ticks.
+const symbol = "TSIM";
+const ws = new WebSocket(`ws://localhost:8082/market/ticks?symbol=${symbol}`);
+
+ws.onopen = () => console.log("Connected to market data");
+ws.onmessage = (evt) => {
+  const tick = JSON.parse(evt.data);
+  // { ts, symbol, price, size, side }
+  console.log("Tick:", tick);
+};
+ws.onclose = () => console.log("Disconnected");
+ws.onerror = (e) => console.error("WebSocket error", e);
+```
+
+For Node, use the `ws` package and replace `WebSocket` with `require('ws')`.
+
+### JavaScript: Consume Trade Events from Kafka
+
+```js
+// Minimal consumer using kafkajs
+const { Kafka } = require("kafkajs");
+
+async function main() {
+  const kafka = new Kafka({
+    clientId: "tradesim-demo",
+    brokers: ["localhost:9092"],
+  });
+  const consumer = kafka.consumer({ groupId: "demo-trades" });
+  await consumer.connect();
+  await consumer.subscribe({ topic: "trades", fromBeginning: false });
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      const payload = message.value?.toString() ?? "{}";
+      const trade = JSON.parse(payload);
+      console.log("Trade:", trade);
+    },
+  });
+}
+
+main().catch(console.error);
+```
+
+Topics and schemas can be customized in [infra/kafka/topics.yaml](infra/kafka/topics.yaml).
+
 ## Development
 
 Use individual service folders for local iteration; build and run with your preferred toolchain.
