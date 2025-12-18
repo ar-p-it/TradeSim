@@ -61,184 +61,154 @@ Limit & market orders
 
 Partial fills
 
-Deterministic trade execution
+# TRADESIM: A Distributed Trading Exchange Simulator
 
-Tech
+Robust, event-driven backend that simulates how real exchanges discover price, route orders, stream market data, and settle trades. It focuses on correctness, latency, and observability — not building a UI trading app.
 
-Java / Go
+<p align="center">
+  <em>Mini-NSE Matching Engine + Broker Layer + Kafka-powered Market Data</em>
+</p>
 
-Multithreading
+---
 
-Zero external database dependency
+## Highlights
 
-2️⃣ Broker Service
+- **Matching Engine:** Price–time priority, partial fills, deterministic execution
+- **Broker Layer:** Accounts, balances, risk validation, order routing
+- **Market Data:** Real-time ticks, best bid/ask, depth snapshots, replayable streams
+- **Ledger & Settlement:** Atomic double-entry accounting, immutable records
+- **Observability:** Structured logs, metrics, DLQs, circuit breakers
 
-Status: 🚧 Planned
+## Architecture
 
-Features
+The system is composed of independent microservices communicating asynchronously over Kafka. Inspired by modern payment/exchange systems (see attachment for reference styling).
 
-User account management
+```mermaid
+graph TD
+    C[Client / Trader] --> B[Broker API]
+    B --> R[Risk & Validation]
+    R --> E[Exchange Core]
+    E -- Trades --> K[Kafka]
+    K --> M[Market Data Service]
+    E -- Trades --> L[Ledger & Settlement]
+```
 
-Balance & position tracking
+## Core Components
 
-Pre-trade risk validation
+### Exchange Core (Matching Engine)
 
-Order routing to exchange core
+- In-memory `OrderBook` with price–time priority matching
+- Limit and market orders; partial fills; deterministic trade execution
+- Tech: Java (multithreaded), zero external DB dependency
 
-Tech
+### Broker Service
 
-Node.js / Spring Boot
+- Accounts, balances, and positions; pre-trade risk checks
+- Route validated orders to the exchange core
+- Tech: Node.js (REST) or Spring Boot; Redis for fast risk checks
 
-REST APIs
+### Market Data Engine
 
-Redis (fast risk checks)
+- Real-time trade ticks; best bid/ask; depth snapshots
+- Replayable streams and WebSockets
+- Tech: Apache Kafka, Kafka Streams, WebSockets
 
-3️⃣ Market Data Engine
+### Ledger & Settlement
 
-Status: 🚧 Planned
+- Atomic double-entry accounting; immutable trade records
+- Simulated T+1 settlement; auditable history
+- Tech: PostgreSQL with transactional guarantees
 
-Features
+## Tech Stack
 
-Real-time trade ticks
+- Java, Go, Node.js, Spring Boot
+- Apache Kafka, Kafka Streams, Redis, PostgreSQL
+- Docker; CI/CD via GitHub Actions; cloud-ready (AWS/GCP)
+- OpenTelemetry, Prometheus, Grafana for observability
 
-Best bid / ask
+## Repository Layout
 
-Order book depth snapshots
-
-Replayable market streams
-
-Tech
-
-Apache Kafka
-
-Kafka Streams
-
-WebSockets
-
-4️⃣ Ledger & Settlement Service
-
-Status: 🚧 Planned
-
-Features
-
-Atomic double-entry accounting
-
-Immutable trade records
-
-Simulated T+1 settlement
-
-Auditable financial history
-
-Tech
-
-PostgreSQL
-
-Transactional guarantees
-
-5️⃣ Observability & Reliability
-
-Status: 🚧 Planned
-
-Features
-
-Structured logging
-
-Latency & throughput metrics
-
-Dead-letter queues
-
-Circuit breakers
-
-Tech
-
-Prometheus
-
-Grafana
-
-OpenTelemetry
-
-🔑 Key Concepts (Implemented / Planned)
-
-Price discovery via order flow
-
-Market liquidity & depth
-
-Event-driven consistency
-
-Idempotent order processing
-
-Backpressure handling
-
-Failure isolation
-
-🛠️ Technology Stack
-Backend & Systems
-
-Java / Go
-
-Node.js
-
-Spring Boot
-
-Kafka
-
-Redis
-
-PostgreSQL
-
-Cloud & DevOps
-
-Docker
-
-AWS (ECS / Fargate)
-
-GCP (Cloud Run / Pub/Sub)
-
-GitHub Actions (CI/CD)
-
-Streaming & Messaging
-
-Apache Kafka
-
-Kafka Streams
-
-📁 Project Structure
+```
 tradesim/
-├── exchange-core/ # Matching engine
-├── broker-service/ # Broker APIs & risk checks
-├── market-data/ # Kafka streams & WebSockets
-├── ledger-service/ # Double-entry accounting
-├── infra/ # Docker, CI/CD, cloud configs
-└── docs/ # Architecture & design docs
+├── exchange-core/        # Matching engine
+├── broker-service/       # Broker APIs & risk checks
+├── market-data-service/  # Kafka streams & WebSockets
+├── ledger-service/       # Double-entry accounting
+├── infra/                # Docker, Kafka, scripts
+└── docs/                 # Architecture & design docs
+```
 
-🛣️ Roadmap
+- Exchange core entrypoint: [exchange-core/src/main/java/com/tradesim/exchange/Main.java](exchange-core/src/main/java/com/tradesim/exchange/Main.java)
+- Matching engine: [exchange-core/src/main/java/com/tradesim/exchange/MatchingEngine.java](exchange-core/src/main/java/com/tradesim/exchange/MatchingEngine.java)
+- Broker service server: [broker-service/src/server.js](broker-service/src/server.js)
+- Market data streams: [market-data-service/src/stream.js](market-data-service/src/stream.js), [market-data-service/src/websocket.js](market-data-service/src/websocket.js)
+- Ledger service: [ledger-service/src/ledger.js](ledger-service/src/ledger.js)
+- Local scripts: [infra/scripts/start-local.sh](infra/scripts/start-local.sh), [infra/scripts/stop-local.sh](infra/scripts/stop-local.sh)
 
-Core matching engine
+## Quick Start (Local)
 
-Broker APIs
+Prerequisites: Docker, Docker Compose; optional Java 17+, Node.js 20+ for local service dev.
 
-Kafka-based order flow
+### Option A: Helper scripts
 
-Market data streaming
+```bash
+./infra/scripts/start-local.sh
+# ... run and test ...
+./infra/scripts/stop-local.sh
+```
 
-Settlement & ledger
+### Option B: Docker Compose
 
-Observability & metrics
+```bash
+docker compose up -d
+# to stop
+docker compose down
+```
 
-Stress testing
+### Service Endpoints (examples)
 
-📌 Why TRADESIM?
+- Broker API routes: see [broker-service/src/routes.js](broker-service/src/routes.js) and [docs/api/broker-api.md](docs/api/broker-api.md)
+- Market data API: [docs/api/market-data-api.md](docs/api/market-data-api.md)
 
-Most trading projects simulate placing orders.
-TRADESIM simulates how markets actually work.
+## Development
 
-Price is not set — it is discovered.
+Use individual service folders for local iteration; build and run with your preferred toolchain.
 
-⚠️ Project Status
+### Exchange Core (Java)
 
-🚧 Under active development
-Architecture, APIs, and internals may evolve as the project matures.
+- Build: `mvn -q -f exchange-core/pom.xml package`
+- Run: `java -jar exchange-core/target/exchange-core-*.jar`
 
-📄 License
+### Broker / Market / Ledger (Node.js)
 
-MIT (Planned)
+- Install: `npm install` inside each service folder
+- Dev run: `npm run dev` (when available)
+
+## Documentation
+
+- Architecture overview: [docs/architecture/overview.md](docs/architecture/overview.md)
+- Event flow: [docs/architecture/event-flow.md](docs/architecture/event-flow.md)
+- Matching engine design: [docs/design/matching-engine.md](docs/design/matching-engine.md)
+- Order book: [docs/design/order-book.md](docs/design/order-book.md)
+- Settlement: [docs/design/settlement.md](docs/design/settlement.md)
+- Kafka runbook: [docs/runbooks/kafka.md](docs/runbooks/kafka.md)
+- Local setup: [docs/runbooks/local-setup.md](docs/runbooks/local-setup.md)
+- Troubleshooting: [docs/runbooks/troubleshooting.md](docs/runbooks/troubleshooting.md)
+
+## Roadmap
+
+- Core matching engine
+- Broker APIs
+- Kafka-based order flow
+- Market data streaming
+- Settlement & ledger
+- Observability & metrics
+- Stress testing
+
+## Status
+
+🚧 Under active development — architecture, APIs, and internals may evolve.
+
+## License
+
+Licensed under MIT. See [LICENSE](LICENSE).
