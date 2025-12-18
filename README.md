@@ -1,11 +1,23 @@
-🚧 TRADESIM (Under Construction)
-📈 TRADESIM — A Distributed Trading Exchange Simulator
+.
 
-TRADESIM is a distributed, event-driven trading exchange platform that simulates the core infrastructure of a real stock exchange, including an exchange-grade matching engine, a broker layer, real-time market data streaming, risk management, and trade settlement.
+🚧 TRADESIM: A Distributed Trading Exchange Simulator
 
-The project is designed to demonstrate how modern financial exchanges work internally, focusing on price discovery, correctness, scalability, and observability, rather than just building a UI trading app.
+📈 TRADESIM is a distributed, event-driven trading exchange platform that simulates the core infrastructure of a real stock exchange, including:
 
-Think: Mini-NSE Matching Engine + Zerodha-style Broker + Kafka-powered Market Data
+An exchange-grade matching engine
+
+A broker layer
+
+Real-time market data streaming
+
+Risk management
+
+Trade settlement
+
+The project focuses on how modern financial exchanges work internally, emphasizing price discovery, correctness, scalability, and observability, rather than just building a UI trading app.
+
+Think:
+Mini-NSE Matching Engine + Zerodha-style Broker + Kafka-powered Market Data
 
 🎯 Project Goals
 
@@ -19,6 +31,7 @@ Ensure financial correctness via double-entry accounting
 
 Showcase cloud-native, observable backend systems
 
+🏗️ High-Level Architecture
 Client / Trader
 │
 ▼
@@ -33,10 +46,12 @@ Exchange Core (Matching Engine)
 ├── Trades → Kafka → Market Data
 └── Trades → Ledger & Settlement
 
-🧩 Core Components (Planned & In Progress)
+🧩 Core Components
 1️⃣ Exchange Core (Matching Engine)
 
 Status: 🚧 In Progress
+
+Features
 
 In-memory order book
 
@@ -60,6 +75,8 @@ Zero external database dependency
 
 Status: 🚧 Planned
 
+Features
+
 User account management
 
 Balance & position tracking
@@ -79,6 +96,8 @@ Redis (fast risk checks)
 3️⃣ Market Data Engine
 
 Status: 🚧 Planned
+
+Features
 
 Real-time trade ticks
 
@@ -100,6 +119,8 @@ WebSockets
 
 Status: 🚧 Planned
 
+Features
+
 Atomic double-entry accounting
 
 Immutable trade records
@@ -118,6 +139,8 @@ Transactional guarantees
 
 Status: 🚧 Planned
 
+Features
+
 Structured logging
 
 Latency & throughput metrics
@@ -134,7 +157,7 @@ Grafana
 
 OpenTelemetry
 
-🔑 Key Concepts Implemented / To Be Implemented
+🔑 Key Concepts (Implemented / Planned)
 
 Price discovery via order flow
 
@@ -169,7 +192,7 @@ Docker
 
 AWS (ECS / Fargate)
 
-GCP (Cloud Run / PubSub)
+GCP (Cloud Run / Pub/Sub)
 
 GitHub Actions (CI/CD)
 
@@ -179,6 +202,7 @@ Apache Kafka
 
 Kafka Streams
 
+📁 Project Structure
 tradesim/
 ├── exchange-core/ # Matching engine
 ├── broker-service/ # Broker APIs & risk checks
@@ -186,3 +210,35 @@ tradesim/
 ├── ledger-service/ # Double-entry accounting
 ├── infra/ # Docker, CI/CD, cloud configs
 └── docs/ # Architecture & design docs
+
+🛣️ Roadmap
+
+Core matching engine
+
+Broker APIs
+
+Kafka-based order flow
+
+Market data streaming
+
+Settlement & ledger
+
+Observability & metrics
+
+Stress testing
+
+📌 Why TRADESIM?
+
+Most trading projects simulate placing orders.
+TRADESIM simulates how markets actually work.
+
+Price is not set — it is discovered.
+
+⚠️ Project Status
+
+🚧 Under active development
+Architecture, APIs, and internals may evolve as the project matures.
+
+📄 License
+
+MIT (Planned)
